@@ -122,10 +122,14 @@ function main() {
         d3_node.classed("fill", d.fill = mousing > 0);
 
         if (mousing > 0) {
-            const pen_color = document.getElementById('color-picker').value
+            // const pen_color = document.getElementById('color-picker').value
+            const pen_color = $('#color-picker').iris('color');
             d3_node.style("fill", pen_color);
             d.pen_color = pen_color;
             // d3_node.style("fill", function(d) { return pen_color; });
+        }
+        else {
+            d3_node.style("fill", null);
         }
 
         border.call(redraw);
@@ -187,10 +191,12 @@ pen-color: <input type="text" id="color-picker" value="#bada55" />
     jQuery(document).ready(function($) {
         $("#color-picker").iris({
             mode: 'hsv',
-            palettes: true,
-            change: function(event, ui) {
-                $("#junk").css('color', ui.color.toString());
-            }
+            palettes: [
+                "#ffffff", "#ff0000", "#00ff00", "#0000ff", // white(#ffffff), red(#ff0000), green(#00ff00), blue(#0000ff)
+                "#000000", "#00ffff", "#ff00ff", "#ffff00", // black(#000000), cyan(#00ffff), magenta(#ff00ff) yellow(#ffff00)
+                "#c0c0c0"  // silver(#c0c0c0)
+            ],
+            change: function(event, ui) { $("#junk").css('color', ui.color.toString()); }
         })
     });
  
@@ -208,3 +214,18 @@ pen-color: <input type="text" id="color-picker" value="#bada55" />
 </script>
 </body>
 </html>
+
+<!--
+https://en.wikipedia.org/wiki/Web_colors
+original named colors (plus above, RGBCMYKW)
+"#000080", // navy
+"#008000", // green (old)
+"#800000", // maroon
+"#808000", // olive
+"#800080", // purple
+"#008080", // teal
+"#808080", // gray
+// lime=green
+// aqua=cyan
+// fuchsia=magenta
+-->
