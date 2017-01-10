@@ -76,7 +76,7 @@ function hexProjection(radius) {
 }
 
 function main() {
-    const width = 960, height = 500, radius = 20;
+    const width = 930, height = 780, radius = 20; // 29 x 27 cell area; center #405 @ (13,14)
     const projection = hexProjection(radius);
     const path_fcn = d3.geo.path().projection(projection);
     const topology = hexTopology(radius, width, height);
@@ -175,6 +175,16 @@ function dump_cells() {
     console.log(json_text);
 }
 
+// https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications
+function snarf(files) {
+    console.log("snarf", files); // FileList
+    const n = files.length;
+    for (var i = 0; i < n; i++) {
+        const f = files[i];
+        console.log("file:", f);
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function(event) {
     console.log("DOM fully loaded and parsed");
     main();
@@ -184,8 +194,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
 <body>
 <p/>
 <input type="button" onclick="dump_cells();" value="dump!" />
+<br>upload: <input type="file" onchange="snarf(this.files)" multiple>
 
 <script src="lib/iris.min.js"></script>
+<br>
 pen-color: <input type="text" id="color-picker" value="#bada55" />
 <script>
     jQuery(document).ready(function($) {
@@ -200,17 +212,19 @@ pen-color: <input type="text" id="color-picker" value="#bada55" />
         })
     });
  
-    $(document).click(function (e) {
-        if (!$(e.target).is("#color-picker, .iris-picker, .iris-picker-inner")) {
-            $('#color-picker').iris('hide');
-            return false;
-        }
+    $('#color-picker').blur(function() {
+        setTimeout(function() {
+            if (!$(document.activeElement).closest(".iris-picker").length)
+                $('#color-picker').iris('hide');
+            else 
+                $('#color-picker').focus();
+        }, 0);
     });
-    $('#color-picker').click(function (event) {
-        $('#color-picker').iris('hide');
-        $(this).iris('show');
-        return false;
+
+    $('#color-picker').focus(function() {
+        $('#color-picker').iris('show');
     });
+
 </script>
 </body>
 </html>
@@ -228,4 +242,23 @@ original named colors (plus above, RGBCMYKW)
 // lime=green
 // aqua=cyan
 // fuchsia=magenta
+-->
+<!--
+document.addEventListener('click', function () {
+    setCheckboxDisplay(this);
+});
+    $(document).click(function (e) {
+        if (!$(e.target).is("#color-picker, .iris-picker, .iris-picker-inner")) {
+            $('#color-picker').iris('hide');
+            return false;
+        }
+e.target.click(e);
+    });
+
+    $('#color-picker').click(function (event) {
+        $('#color-picker').iris('hide');
+        $(this).iris('show');
+        return false;
+    });
+
 -->
