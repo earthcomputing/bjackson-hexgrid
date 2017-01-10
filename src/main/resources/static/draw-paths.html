@@ -79,17 +79,8 @@ function main() {
     const width = 960, height = 500, radius = 20;
     const projection = hexProjection(radius);
     const path_fcn = d3.geo.path().projection(projection);
-
     const topology = hexTopology(radius, width, height);
     const mesh = topojson.mesh(topology, topology.objects.hexagons);
-
-    // const topo_text = JSON.stringify(topology);
-    // console.log(topo_text);
-    // const topology = JSON.parse(topo_text);
-
-    // const mesh_text = JSON.stringify(mesh);
-    // console.log(mesh_text);
-
     const svg = d3.select("body").append("svg");
     svg.attr("width", width).attr("height", height);
 
@@ -125,10 +116,19 @@ function main() {
     }
 
     function mousemove(d) {
-        if (mousing) {
-            d3.select(this).classed("fill", d.fill = mousing > 0);
-            border.call(redraw);
+        if (!mousing) return;
+
+        const d3_node = d3.select(this);
+        d3_node.classed("fill", d.fill = mousing > 0);
+
+        if (mousing > 0) {
+            const pen_color = document.getElementById('color-picker').value
+            d3_node.style("fill", pen_color);
+            d.pen_color = pen_color;
+            // d3_node.style("fill", function(d) { return pen_color; });
         }
+
+        border.call(redraw);
     }
 
     function mouseup() {
@@ -143,43 +143,26 @@ function main() {
     }
 }
 
-function dump_cells_filtered() {
-    const svg = d3.select("svg");
-    // const grid = svg.select("g");
-    const paths = svg.selectAll("path");
-
-    function replacer(key, value) {
-        // if (typeof value === "string") return undefined;
-        if (key === "type") return undefined;
-        if (key === "arcs") return undefined;
-        if (key === "coordinates") return undefined;
-        return value;
-    }
-
-    const raw_text = JSON.stringify(paths, replacer);
-    console.log(raw_text);
-}
-
 function dump_cells() {
     const svg = d3.select("svg");
-    // const grid = svg.select("g");
     const paths = svg.selectAll("path");
-
     const items = [];
 
     paths.each(function() {
         const it = d3.select(this);
         const it_data = it.datum();
         if (!it_data) return;
+
         const active = it_data.fill;
         if (!active) return;
 
+        const fill_color = it_data.pen_color;
         const o = {
             // class: this.getAttribute('class'),
             cell_id: this.getAttribute('cell_id'),
             cell_index: this.getAttribute('cell_index'),
             xyloc: this.getAttribute('xyloc'),
-            colors: [ active ]
+            colors: [ fill_color ]
         };
         items.push(o);
     });
@@ -201,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 <script src="lib/iris.min.js"></script>
 pen-color: <input type="text" id="color-picker" value="#bada55" />
 <script>
-    jQuery(document).ready(function($){
+    jQuery(document).ready(function($) {
         $("#color-picker").iris({
             mode: 'hsv',
             palettes: true,
@@ -223,79 +206,5 @@ pen-color: <input type="text" id="color-picker" value="#bada55" />
         return false;
     });
 </script>
-
 </body>
 </html>
-
-<!--
-<div>
-<link rel="stylesheet" href="css/palette-color-picker.css">
-<script src="lib/palette-color-picker.min.js"></script>
-<script>
-    $(document).ready(function(){ $("[name='pen-color']").paletteColorPicker(); });
-</script>
-
-pen-color: <input type="text" name="pen-color" data-palette='["#D50000","#304FFE","#00B8D4","#00C853","#FFD600","#FF6D00","#FF1744","#3D5AFE","#00E5FF","#00E676","#FFEA00","#FF9100","#FF5252","#536DFE","#18FFFF","#69F0AE","#FFFF00","#FFAB40"]' value="" style="margin-right:48px;">
-</div>
--->
-
-<!--
-<form>
-<input type="text" id="color" name="color" value="#123456" />
-</form>
-
-<script> function color() { alert("color"); } </script>
-<form onsubmit="color(); return false"> </form>
--->
-
-<!--
-<div id="colorpicker">
-<script src="lib/farbtastic.js"></script>
-<script type="text/javascript" charset="utf-8">
-    $(document).ready(function() { $("#colorpicker").farbtastic("#color"); });
-</script>
-<script type="text/javascript">
-    jQuery.browser = {};
-    (function () {
-        jQuery.browser.msie = false;
-        jQuery.browser.version = 0;
-        if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
-            jQuery.browser.msie = true;
-            jQuery.browser.version = RegExp.$1;
-        }
-    })();
-    $(document).ready(function() { $("#colorpicker").farbtastic("#color"); });
-</script>
-</div>
-
-https://github.com/mattfarina/farbtastic
-http://acko.net/blog/farbtastic-jquery-color-picker-plug-in/
--->
-
-<!--
-<div>
-<input type="button" onclick="color();" value="color" />
-
-https://raw.githubusercontent.com/carloscabo/jquery-palette-color-picker/master/src/
-palette-color-picker.min.js
-palette-color-picker.css
-</div>
--->
-<!--
-// window.onload, document.onload
-// $(document).ready(function(){..}); // jQuery
-
-The onload event is a standard event in the DOM, while the ready event is specific to jQuery. 
-
-The purpose of the ready event is that it should occur as early as possible after the document has loaded, so that code that adds functionality to the elements in the page doesn't have to wait for all content to load.
-
-
-https://developer.mozilla.org/en-US/docs/Web/Events/DOMContentLoaded
--->
-
-<!--
-https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js
-https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js
-https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css
-https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.min.css
--->
