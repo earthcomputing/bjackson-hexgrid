@@ -182,6 +182,14 @@ function snarf(files) {
     for (var i = 0; i < n; i++) {
         const f = files[i];
         console.log("file:", f);
+
+        var json_text;
+        const fr = new FileReader();
+        fr.onload = function(e) {
+            json_text = e.target.result;
+            console.log("body:", json_text);
+        }
+        fr.readAsText(f);
     }
 }
 
