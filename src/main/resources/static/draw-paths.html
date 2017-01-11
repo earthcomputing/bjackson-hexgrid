@@ -178,7 +178,7 @@ const recorder = function() {
     }
     done = function() {
         const json_text = JSON.stringify(items);
-        console.log(json_text);
+        return json_text;
     }
     return this;
 }
@@ -208,10 +208,11 @@ const updater = function(hashmap) {
     return this;
 }
 
-function dump_cells(callback) {
+function dump_cells() {
     const state = recorder();
     walk_model(state.note);
-    state.done();
+    const json_text = state.done();
+    console.log(json_text);
 }
 
 // { "cell_id": "282a8431...", "cell_index": "393", "xyloc": "1,14", "colors": ["#bada55"]},
@@ -255,6 +256,16 @@ function snarf(files) {
     }
 }
 
+function download() {
+    const state = recorder();
+    walk_model(state.note);
+    const json_text = state.done();
+    const a = document.createElement('a');
+    a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(json_text));
+    a.setAttribute('download', "dump.json");
+    a.click()
+}
+
 document.addEventListener("DOMContentLoaded", function(event) {
     console.log("DOM fully loaded and parsed");
     main();
@@ -263,7 +274,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 </head>
 <body>
 <p/>
-<input type="button" onclick="dump_cells();" value="dump!" />
+<!-- <input type="button" onclick="dump_cells();" value="dump!" /> -->
+<input type="button" onclick="download();" value="download!" />
 <br>upload: <input type="file" onchange="snarf(this.files)" multiple>
 
 <script src="lib/iris.min.js"></script>
