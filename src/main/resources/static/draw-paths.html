@@ -269,10 +269,15 @@ function apply_model(json_text) {
     state.done();
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications
-function snarf(files) {
+async function snarf(files) {
     // console.log("snarf", files); // FileList
     const n = files.length;
+    const delay = document.getElementById('delay').value * 1000;
     for (var i = 0; i < n; i++) {
         const f = files[i];
         console.log("file:", f);
@@ -285,16 +290,18 @@ function snarf(files) {
             apply_model(json_text);
         }
         fr.readAsText(f);
+        await sleep(delay);
     }
 }
 
 function download() {
+    const filename = document.getElementById('filename').value;
     const state = recorder();
     walk_model(state.note);
     const json_text = state.done();
     const a = document.createElement('a');
     a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(json_text));
-    a.setAttribute('download', "dump.json");
+    a.setAttribute('download', filename);
     a.click()
 }
 
@@ -307,8 +314,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
 <body>
 <p/>
 <!-- <input type="button" onclick="dump_cells();" value="dump!" /> -->
+filename: <input type="text" id="filename" value="dump.json" />
 <input type="button" onclick="download();" value="download!" />
 <br>upload: <input type="file" onchange="snarf(this.files)" multiple>
+<br>delay: <input type="text" id="delay" value="3" />
 
 <script src="lib/iris.min.js"></script>
 <br>
@@ -356,23 +365,4 @@ original named colors (plus above, RGBCMYKW)
 // lime=green
 // aqua=cyan
 // fuchsia=magenta
--->
-<!--
-document.addEventListener('click', function () {
-    setCheckboxDisplay(this);
-});
-    $(document).click(function (e) {
-        if (!$(e.target).is("#color-picker, .iris-picker, .iris-picker-inner")) {
-            $('#color-picker').iris('hide');
-            return false;
-        }
-e.target.click(e);
-    });
-
-    $('#color-picker').click(function (event) {
-        $('#color-picker').iris('hide');
-        $(this).iris('show');
-        return false;
-    });
-
 -->
