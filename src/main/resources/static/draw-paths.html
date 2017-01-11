@@ -365,4 +365,10 @@ original named colors (plus above, RGBCMYKW)
 // lime=green
 // aqua=cyan
 // fuchsia=magenta
+
+sed -e $'s/{"cell_id":/\\\n{"cell_id":/g' -e $'s/\]$/\\\n]/'
+
+FIXME : color == white implies a tombstone, erase the cell
+
 -->
+
