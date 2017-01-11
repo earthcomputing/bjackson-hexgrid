@@ -147,37 +147,98 @@ function main() {
     }
 }
 
-function dump_cells() {
+function walk_model(callback) {
     const svg = d3.select("svg");
     const paths = svg.selectAll("path");
-    const items = [];
 
     paths.each(function() {
         const it = d3.select(this);
         const it_data = it.datum();
         if (!it_data) return;
 
+        callback(this, it_data);
+    });
+}
+
+const recorder = function() {
+    const items = [];
+    note = function(node, it_data) {
         const active = it_data.fill;
         if (!active) return;
 
         const fill_color = it_data.pen_color;
         const o = {
-            // class: this.getAttribute('class'),
-            cell_id: this.getAttribute('cell_id'),
-            cell_index: this.getAttribute('cell_index'),
-            xyloc: this.getAttribute('xyloc'),
+            // class: node.getAttribute('class'),
+            cell_id: node.getAttribute('cell_id'),
+            cell_index: node.getAttribute('cell_index'),
+            xyloc: node.getAttribute('xyloc'),
             colors: [ fill_color ]
         };
         items.push(o);
+    }
+    done = function() {
+        const json_text = JSON.stringify(items);
+        console.log(json_text);
+    }
+    return this;
+}
+
+function ink_cell(dom_node, d, pen_color) {
+    const d3_node = d3.select(dom_node);
+    d3_node.classed("fill", d.fill = true);
+    d3_node.style("fill", pen_color);
+    d.pen_color = pen_color;
+}
+
+const updater = function(hashmap) {
+    const map = hashmap;
+    note = function(node, it_data) {
+        const xyloc = node.getAttribute('xyloc');
+        const past = map[xyloc];
+        if (!past) return;
+
+        const colors = past.colors;
+        colors.forEach(function(color) {
+            // console.log("xyloc:", xyloc, "color", color);
+            ink_cell(node, it_data, color);
+        });
+    }
+    done = function() {
+    }
+    return this;
+}
+
+function dump_cells(callback) {
+    const state = recorder();
+    walk_model(state.note);
+    state.done();
+}
+
+// { "cell_id": "282a8431...", "cell_index": "393", "xyloc": "1,14", "colors": ["#bada55"]},
+function apply_model(json_text) {
+    const o = JSON.parse(json_text);
+    o.forEach(function(item) {
+        // item.cell_id;
+        // item.cell_index;
+        const colors = item.colors;
+        colors.forEach(function(color) {
+            // console.log("item:", item.xyloc, "color", color);
+        });
     });
 
-    const json_text = JSON.stringify(items);
-    console.log(json_text);
+    const hashmap = o.reduce(function(map, item) {
+        map[item.xyloc] = item;
+        return map;
+    }, {});
+
+    const state = updater(hashmap);
+    walk_model(state.note);
+    state.done();
 }
 
 // https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications
 function snarf(files) {
-    console.log("snarf", files); // FileList
+    // console.log("snarf", files); // FileList
     const n = files.length;
     for (var i = 0; i < n; i++) {
         const f = files[i];
@@ -187,7 +248,8 @@ function snarf(files) {
         const fr = new FileReader();
         fr.onload = function(e) {
             json_text = e.target.result;
-            console.log("body:", json_text);
+            // console.log("body:", json_text);
+            apply_model(json_text);
         }
         fr.readAsText(f);
     }
