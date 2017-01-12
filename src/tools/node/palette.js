@@ -39,14 +39,20 @@ function generate() {
     // hex complement for negative color
     rotations.forEach(function(angle, i) {
         safe.forEach(function(radius, j) {
+
+            function doit(offset, color) {
+                var x = center[0] + offset[0];
+                var y = center[1] + offset[1];
+                const xyloc = [ x, y ];
+                const entry = { xyloc: xyloc, colors: [ color ] };
+                cells.push(entry);
+                console.log("angle:", angle, "radius:", j + 1, "xyloc:", xyloc, "color:", color);
+            }
+
             const offset =  vector(angle, j + 1);
-            var x = center[0] + offset[0];
-            var y = center[1] + offset[1];
             const color = colorspace(i, radius);
-            const xyloc = [ x, y ];
-            const entry = { xyloc: xyloc, colors: [ color ] };
-            cells.push(entry);
-            console.log("angle:", angle, "radius:", j + 1, "xyloc:", xyloc, "color:", color);
+            doit(offset, color);
+            // FIXME: reflect
         });
     });
     return cells;
