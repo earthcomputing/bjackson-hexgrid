@@ -16,7 +16,7 @@
     div.tooltip {
         position: absolute;
         text-align: center;
-        width: 60px;
+        width: 100px;
         height: 28px;
         padding: 2px;
         font: 12px sans-serif;
@@ -116,10 +116,11 @@ function main() {
         .on("mousemove", mousemove)
         .on("mouseup", mouseup)
         .on("mouseover", function(d, i) {
+            const hint = "(" + d.xyloc + ") : " + i + (d.pen_color ? "<br/>" + d.pen_color : "");
             div.transition()
                 .duration(200)
                 .style("opacity", .9);
-            div.html(d.xyloc + "<br/>" + i)
+            div.html(hint)
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         })
@@ -209,7 +210,11 @@ const recorder = function() {
         items.push(o);
     }
     done = function() {
-        const json_text = JSON.stringify(items);
+        const wrapper = {
+            version: 2,
+            items: items
+        };
+        const json_text = JSON.stringify(wrapper);
         return json_text;
     }
     return this;
@@ -226,9 +231,9 @@ const updater = function(hashmap) {
     const map = hashmap;
     note = function(node, it_data) {
         const xyloc = node.getAttribute('xyloc');
-        const past = map[xyloc];
-        if (!past) return;
+        if (!(xyloc in map)) return;
 
+        const past = map[xyloc];
         const colors = past.colors;
         colors.forEach(function(color) {
             // console.log("xyloc:", xyloc, "color", color);
@@ -247,9 +252,22 @@ function dump_cells() {
     console.log(json_text);
 }
 
+function toHashMap(ary, getKey) {
+    const _hashMap = {};
+    ary.forEach(function (obj, i) {
+        const key = getKey(obj);
+        _hashMap[key] = obj;
+    });
+    return _hashMap;
+};
+
+
 // { "cell_id": "282a8431...", "cell_index": "393", "xyloc": "1,14", "colors": ["#bada55"]},
 function apply_model(json_text) {
-    const o = JSON.parse(json_text);
+    const wrapper = JSON.parse(json_text);
+
+    // check version
+    const o = (wrapper.version) ? wrapper.items : wrapper;
     o.forEach(function(item) {
         // item.cell_id;
         // item.cell_index;
@@ -259,6 +277,7 @@ function apply_model(json_text) {
         });
     });
 
+    // const hashmap = toHashMap(o, function(item) { return item.xyloc; });
     const hashmap = o.reduce(function(map, item) {
         map[item.xyloc] = item;
         return map;
@@ -329,7 +348,13 @@ pen-color: <input type="text" id="color-picker" value="#bada55" />
             palettes: [
                 "#ffffff", "#ff0000", "#00ff00", "#0000ff", // white(#ffffff), red(#ff0000), green(#00ff00), blue(#0000ff)
                 "#000000", "#00ffff", "#ff00ff", "#ffff00", // black(#000000), cyan(#00ffff), magenta(#ff00ff) yellow(#ffff00)
-                "#c0c0c0"  // silver(#c0c0c0)
+                "#c0c0c0",  // silver(#c0c0c0)
+                // "#000080", "#008000", "#800000", // navy, green (old), maroon
+                // "#808000", "#800080", "#008080", // olive, purple, teal
+                // "#808080", // gray
+
+                // "#000080", "#008000", "#800000", // navy, green (old), maroon
+                // "#808000", "#800080", "#008080", // olive, purple, teal
             ],
             change: function(event, ui) { $("#junk").css('color', ui.color.toString()); }
         })
@@ -370,5 +395,19 @@ sed -e $'s/{"cell_id":/\\\n{"cell_id":/g' -e $'s/\]$/\\\n]/'
 
 FIXME : color == white implies a tombstone, erase the cell
 
--->
+#fff
+#f00 #0f0 #00f
+#0ff #f0f #ff0
+#800 #080 #008
+#088 #808 #880
 
+#f80, #0f8, #80f,
+#f90, #0f9, #90f,
+
+#c00 #0c0 #00c
+#0cc #c0c #cc0
+
+"#f80", "#0f8", "#80f",
+"#f90", "#0f9", "#90f",
+
+-->
