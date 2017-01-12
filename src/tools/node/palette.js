@@ -8,6 +8,13 @@ function text_rgb(rgb) {
     return '#' + encoded.toString(16).substr(1);
 }
 
+function invert_color(value) {
+    const hex = value.substring(1);
+    const color = parseInt(hex, 16);
+    const flip = 0x1000000 + (0xFFFFFF ^ color);
+    return '#' + flip.toString(16).substr(1);
+}
+
 // const rotations = [ 30, 90, 120 ]; // degrees
 function vector(angle, radius) {
     const offset = (angle === 30) ? [1, 2] : (angle === 90) ? [2, 0] : (angle === 120) ? [1, -2] : null;
@@ -51,8 +58,10 @@ function generate() {
 
             const offset =  vector(angle, j + 1);
             const color = colorspace(i, radius);
+            const not_color = invert_color(color);
             doit(offset, color);
-            // FIXME: reflect
+            offset.forEach(function(value, i) { offset[i] *= -1; });
+            doit(offset, not_color);
         });
     });
     return cells;
