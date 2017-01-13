@@ -70,7 +70,8 @@ function hexTopology(radius, width, height) {
     return {
         transform: { translate: [0, 0], scale: [1, 1] },
         objects: { hexagons: { type: "GeometryCollection", geometries: geometries }},
-        arcs: arcs
+        arcs: arcs,
+        dims: [m, n]
     };
 }
 
@@ -90,18 +91,38 @@ function hexProjection(radius) {
     };
 }
 
+function wrap(items) {
+    const svg = d3.select("svg");
+    const width = svg.attr("width");
+    const height = svg.attr("height");
+    const dims = svg.attr("dims");
+
+    const wrapper = {
+        version: 2,
+        dims: dims,
+        width: width,
+        height: height,
+        items: items
+    };
+    const json_text = JSON.stringify(wrapper);
+    return json_text;
+}
+
 function main() {
     const div = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
 
-    const width = 930, height = 780, radius = 20; // 29 x 27 cell area; center #405 @ (13,14)
+    // 28 x 28 cell area; center #405 @ (13,14)
+    const width = 933;
+    const height = 780;
+    const radius = 20;
     const projection = hexProjection(radius);
     const path_fcn = d3.geo.path().projection(projection);
     const topology = hexTopology(radius, width, height);
     const mesh = topojson.mesh(topology, topology.objects.hexagons);
     const svg = d3.select("body").append("svg");
-    svg.attr("width", width).attr("height", height);
+    svg.attr("width", width).attr("height", height).attr("dims", topology.dims);
 
     const grid = svg.append("g").attr("class", "hexagon");
     const paths = grid.selectAll("path")
@@ -210,12 +231,7 @@ const recorder = function() {
         items.push(o);
     }
     done = function() {
-        const wrapper = {
-            version: 2,
-            items: items
-        };
-        const json_text = JSON.stringify(wrapper);
-        return json_text;
+        return items;
     }
     return this;
 }
@@ -248,7 +264,8 @@ const updater = function(hashmap) {
 function dump_cells() {
     const state = recorder();
     walk_model(state.note);
-    const json_text = state.done();
+    const items = state.done();
+    const json_text = wrap(items);
     console.log(json_text);
 }
 
@@ -317,7 +334,8 @@ function download() {
     const filename = document.getElementById('filename').value;
     const state = recorder();
     walk_model(state.note);
-    const json_text = state.done();
+    const items = state.done();
+    const json_text = wrap(items);
     const a = document.createElement('a');
     a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(json_text));
     a.setAttribute('download', filename);
@@ -410,4 +428,7 @@ FIXME : color == white implies a tombstone, erase the cell
 "#f80", "#0f8", "#80f",
 "#f90", "#0f9", "#90f",
 
+0..783 28x28
+
 -->
+
