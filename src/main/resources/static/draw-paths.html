@@ -279,7 +279,7 @@ function toHashMap(ary, getKey) {
 };
 
 
-// { "cell_id": "282a8431...", "cell_index": "393", "xyloc": "1,14", "colors": ["#bada55"]},
+// { "cell_id": "282a8431...", "cell_index": "393", "xyloc": "1,14", "colors": ["#ff0000"]},
 function apply_model(json_text) {
     const wrapper = JSON.parse(json_text);
 
@@ -358,7 +358,7 @@ filename: <input type="text" id="filename" value="dump.json" />
 
 <script src="lib/iris.min.js"></script>
 <br>
-pen-color: <input type="text" id="color-picker" value="#bada55" />
+pen-color: <input type="text" id="color-picker" value="#ff0000" />
 <script>
     jQuery(document).ready(function($) {
         $("#color-picker").iris({
